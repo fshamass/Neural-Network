@@ -1,0 +1,10 @@
+*.DS_Store
+.vscode/
+Input/lib/
+Input/obj/
+Network/obj/
+Input/main
+main
+main.dSYM/
+*.png
+
