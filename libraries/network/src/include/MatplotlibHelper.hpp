@@ -2,7 +2,6 @@
 #define __MatplotlibHelper__
 
 #include <iostream>
-#include "matplotlibcpp.h"
 
 class MatplotlibHelper {
 public:

@@ -1,35 +1,52 @@
-#include "NeuralNet.hpp"
+#include "NeuralNetImpl.hpp"
 
-namespace plt = matplotlibcpp;
+std::shared_ptr<NeuralNet> netPtr = nullptr;
 
-NeuralNet::NeuralNet(uint32_t numFeatures, uint32_t batchSize)
+NeuralNetImpl::NeuralNetImpl(uint32_t numFeatures, uint32_t batchSize)
 : numFeatures_(numFeatures), batchSize_(batchSize) {
     accuracy_ = 0;
 }
 
+NeuralNet::NeuralNet() {
+}
+
 NeuralNet::~NeuralNet() {
+}
+
+NeuralNet& NeuralNet::getInstance(uint32_t numFeatures, uint32_t batchSize) {
+    if(netPtr == nullptr) {
+        netPtr = std::make_shared<NeuralNetImpl>(numFeatures, batchSize);
+    }
+    return *netPtr;
+}
+
+NeuralNetImpl::~NeuralNetImpl() {
     network_.clear();
 }
 
-void NeuralNet::setTrainData(std::vector<std::shared_ptr<Data>>& trainData) {
+void NeuralNet::cleanup() {
+    netPtr = nullptr;
+}
+
+void NeuralNetImpl::setTrainData(std::vector<std::shared_ptr<DataHandler::Data>>& trainData) {
     trainData_ = trainData;
 }
 
-void NeuralNet::setTestData(std::vector<std::shared_ptr<Data>>& testData) {
+void NeuralNetImpl::setTestData(std::vector<std::shared_ptr<DataHandler::Data>>& testData) {
     testData_  = testData;
 }
 
-void NeuralNet::setValidData(std::vector<std::shared_ptr<Data>>& validData) {
+void NeuralNetImpl::setValidData(std::vector<std::shared_ptr<DataHandler::Data>>& validData) {
     validData_ = validData;
 }
 
-void NeuralNet::shuffleData(std::vector<std::shared_ptr<Data>>& data) {
+void NeuralNetImpl::shuffleData(std::vector<std::shared_ptr<DataHandler::Data>>& data) {
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(data.begin(), data.end(), g);
 }
 
-bool NeuralNet::isNetworkValid() {
+bool NeuralNetImpl::isNetworkValid() {
     bool retValue = true;
     if(trainData_.size() == 0) {
         std::cout << "Error: Training Data is not set" << std::endl;
@@ -58,7 +75,7 @@ bool NeuralNet::isNetworkValid() {
     return retValue;
 }
 
-void NeuralNet::addLayer(uint32_t numNeurons, Activation activation,
+void NeuralNetImpl::addLayer(uint32_t numNeurons, Activation activation,
     double weightRegularizerL1, double biasRegularizerL1,
     double weightRegularizerL2, double biasRegularizerL2) {
     uint32_t numInputs;
@@ -88,7 +105,7 @@ void NeuralNet::addLayer(uint32_t numNeurons, Activation activation,
     network_.push_back(layer);
 }
 
-void NeuralNet::setLossFunction(LossFunc lossFunc) {
+void NeuralNetImpl::setLossFunction(LossFunc lossFunc) {
     std::shared_ptr<INetLoss> lossFunction;
     switch(lossFunc) {
         case LossFunc::CATEGORICAL_CROSS_ENTROPY: {
@@ -103,7 +120,7 @@ void NeuralNet::setLossFunction(LossFunc lossFunc) {
     netLoss_ = lossFunction;
 }
 
-void NeuralNet::setOptimizer(Optimizer optimizer, optimizerParams params) {
+void NeuralNetImpl::setOptimizer(Optimizer optimizer, optimizerParams params) {
     switch(optimizer) {
         case Optimizer::SGD: {
             optimizer_ = std::make_shared<SGD>(network_, params);
@@ -119,7 +136,7 @@ void NeuralNet::setOptimizer(Optimizer optimizer, optimizerParams params) {
     }
 }
 
-void NeuralNet::forwardPass(Eigen::MatrixXd& input) {
+void NeuralNetImpl::forwardPass(Eigen::MatrixXd& input) {
     //First layer will process input to Network
     network_[0]->forward(input);
     //Pass data through all layers
@@ -129,14 +146,14 @@ void NeuralNet::forwardPass(Eigen::MatrixXd& input) {
     }
 }
 
-void NeuralNet::populateInputsAndTargets(std::vector<std::shared_ptr<Data>>& data,
+void NeuralNetImpl::populateInputsAndTargets(std::vector<std::shared_ptr<DataHandler::Data>>& data,
     uint32_t startIdx, uint32_t endIdx, Eigen::MatrixXd& netInput, Eigen::VectorXd& targets) {
     //Collect batch of data
     for( uint32_t sample = startIdx; sample < endIdx; ++sample) {
         netInput.row(sample - startIdx) =
-            Eigen::Map<Eigen::VectorXd>(data[sample]->getFeatures().data(),
-                                        data[sample]->getFeatureSize());
-        targets(sample - startIdx) = data[sample]->getLabel();
+            Eigen::Map<Eigen::VectorXd>(data[sample]->features.data(),
+                                        (data[sample]->features).size());
+        targets(sample - startIdx) = data[sample]->label;
     }
     #ifdef __DEBUG__
     std::cout << "Network Input: \n" << netInput << std::endl;
@@ -144,12 +161,12 @@ void NeuralNet::populateInputsAndTargets(std::vector<std::shared_ptr<Data>>& dat
     #endif
 }
 
-void NeuralNet::calculateNetLoss(Eigen::VectorXd& targets) {
+void NeuralNetImpl::calculateNetLoss(Eigen::VectorXd& targets) {
     //Get network error
     netLoss_->forward((network_.back())->getActivOutput(), targets);
 }
 
-void NeuralNet::addRegularizationLoss() {
+void NeuralNetImpl::addRegularizationLoss() {
     double regularizationLoss = 0.0;
     //Get regularization loss for all layers
     for(int i = 0; i < network_.size(); ++i) {
@@ -159,7 +176,7 @@ void NeuralNet::addRegularizationLoss() {
     netLoss_->addRegularization(regularizationLoss);
 }
 
-void NeuralNet::backPropagate(Eigen::VectorXd& targets) {
+void NeuralNetImpl::backPropagate(Eigen::VectorXd& targets) {
     //Back propagation - last layer
     netLoss_->backward((network_.back())->getActivOutput(), targets);
     network_[network_.size()-1]->backward(netLoss_->getLossGradients());
@@ -169,7 +186,7 @@ void NeuralNet::backPropagate(Eigen::VectorXd& targets) {
     }
 }
 
-void NeuralNet::optimize() {
+void NeuralNetImpl::optimize() {
     //Optimization of weights and biases
     optimizer_->preUpdate();
     for(uint32_t layer = 0; layer < network_.size(); ++layer) {
@@ -178,24 +195,15 @@ void NeuralNet::optimize() {
     optimizer_->postUpdate();
 }
 
-void NeuralNet::train(uint32_t epochs) {
+void NeuralNetImpl::train(uint32_t epochs) {
     double aveNetworkError , aveNetAccuracy , networkLoss;
     Eigen::VectorXd targets(batchSize_);
     Eigen::MatrixXd netInput(batchSize_, numFeatures_);
-    //Set plotting figures attributes
-    std::vector<std::pair<std::string,std::string>> plotAttr;
-    plotAttr.push_back(std::make_pair<std::string, std::string>("Val", "red"));
-    plotAttr.push_back(std::make_pair<std::string, std::string>("Train", "blue"));
-
-    //Instantiate plotting figures instances
-    auto lossPlot = std::shared_ptr<MatplotlibHelper>(
-        new MatplotlibHelper(epochs, "Network Loss", plotAttr));
-    auto accPlot = std::shared_ptr<MatplotlibHelper>(
-        new MatplotlibHelper(epochs, "Network Accuracy", plotAttr));
 
     //Declare vectors to hold accuracy and loss data per epoch
-    std::vector<double> accData(plotAttr.size());
-    std::vector<double> lossData(plotAttr.size());
+    //Size is 2 for validation and accuracy
+    std::vector<double> accData(2);
+    std::vector<double> lossData(2);
 
     if(!isNetworkValid()) {
         throw "Invalid network configurations";
@@ -208,9 +216,10 @@ void NeuralNet::train(uint32_t epochs) {
         calculateNetLoss(targets);
         //Store network loss on validation set
         lossData[0] = netLoss_->getAveNetLoss();
+        validLoss_.push_back(netLoss_->getAveNetLoss());
         //Store network accuracy on validation set
         accData[0] = netLoss_->getNetAccuracy();
-
+        validAcc_.push_back(netLoss_->getNetAccuracy());
         //Shuffle input data with every epoch for best randomization
         shuffleData(trainData_);
         //std::cout << "epoch: " << epoch << " , ";
@@ -226,12 +235,12 @@ void NeuralNet::train(uint32_t epochs) {
         }
         //Store network loss on last batch of training data (end of epoch)
         lossData[1] = netLoss_->getAveNetLoss();
+        trainLoss_.push_back(netLoss_->getAveNetLoss());
         accData[1] = netLoss_->getNetAccuracy();
+        trainAcc_.push_back(netLoss_->getNetAccuracy());
         std::cout << "epoch: " << epoch << " , ";
         std::cout << "accuracy: " << std::setprecision(3) << netLoss_->getNetAccuracy() << " , ";
         std::cout << "loss: " << std::setprecision(3) << netLoss_->getAveNetLoss() << std::endl;
-        lossPlot->draw(lossData);
-        accPlot->draw(accData);
     }
     //Run model on test data series
     populateInputsAndTargets(validData_, 0, testData_.size(), netInput, targets);
@@ -241,4 +250,20 @@ void NeuralNet::train(uint32_t epochs) {
     std::cout << "Test Data , " ;
     std::cout << "accuracy: " << std::setprecision(3) << netLoss_->getNetAccuracy() << " , ";
     std::cout << "loss: " << std::setprecision(3) << netLoss_->getAveNetLoss() << std::endl;
+}
+
+std::vector<double>& NeuralNetImpl::getTrainLoss() {
+    return trainLoss_;
+}
+
+std::vector<double>& NeuralNetImpl::getTrainAcc() {
+    return trainAcc_;
+}
+
+std::vector<double>& NeuralNetImpl::getValidLoss() {
+    return validLoss_;
+}
+
+std::vector<double>& NeuralNetImpl::getValidAcc() {
+    return validAcc_;
 }

@@ -6,7 +6,6 @@ Relu::Relu(uint32_t numNeurons, uint32_t batchSize) {
 }
 
 Relu::~Relu() {
-
 }
 
 void Relu::forward(Eigen::MatrixXd& input) {

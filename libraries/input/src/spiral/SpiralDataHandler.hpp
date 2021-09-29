@@ -12,8 +12,7 @@
 #include <limits>
 #include "fstream"
 #include "stdint.h"
-#include "Data.hpp"
-#include "IDataHandler.hpp"
+#include "DataHandler.hpp"
 
 /***********************************************************************
  * Handeles generation of spiral data groups.
@@ -28,10 +27,10 @@
  *   Validation data percentage doesn't yeld to integer
  * *********************************************************************/
 
-class DataHandler : public IDataHandler {
+class SpiralDataHandler : public DataHandler {
 public:
-    DataHandler(uint32_t numSamples, uint32_t numClasses);
-    ~DataHandler();
+    SpiralDataHandler(uint32_t numSamples, uint32_t numClasses);
+    ~SpiralDataHandler();
 
     //Normalize spiral data, if needed. It should be called after class construction
     //and before splitting data between training, validations and testing
@@ -41,10 +40,10 @@ public:
 
     //getter APIs for all vectors
     uint32_t getNumLabels() override;
-    std::vector<std::shared_ptr<Data>>& getAllData() override;
-    std::vector<std::shared_ptr<Data>>& getTrainData() override;
-    std::vector<std::shared_ptr<Data>>& getTestData() override;
-    std::vector<std::shared_ptr<Data>>& getValidData() override;
+    std::vector<std::shared_ptr<DataHandler::Data>>& getAllData() override;
+    std::vector<std::shared_ptr<DataHandler::Data>>& getTrainData() override;
+    std::vector<std::shared_ptr<DataHandler::Data>>& getTestData() override;
+    std::vector<std::shared_ptr<DataHandler::Data>>& getValidData() override;
 
 private:
     void generateData();
@@ -56,10 +55,10 @@ private:
     double dataMin_;
     double dataMax_;
     //Vectors to hold pointers to different data sets
-    std::vector<std::shared_ptr<Data>> dataStore_;
-    std::vector<std::shared_ptr<Data>> trainingData_;
-    std::vector<std::shared_ptr<Data>> testData_;
-    std::vector<std::shared_ptr<Data>> validationData_;
+    std::vector<std::shared_ptr<DataHandler::Data>> dataStore_;
+    std::vector<std::shared_ptr<DataHandler::Data>> trainingData_;
+    std::vector<std::shared_ptr<DataHandler::Data>> testData_;
+    std::vector<std::shared_ptr<DataHandler::Data>> validationData_;
 
 };
 

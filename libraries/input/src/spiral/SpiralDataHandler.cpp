@@ -1,8 +1,28 @@
-#include "DataHandler.hpp"
+#include "SpiralDataHandler.hpp"
 #include <eigen3/Eigen/Core>
+#include <iostream>
 
-DataHandler::DataHandler(uint32_t numSamples, uint32_t numClasses)
-: numSamples_(numSamples), numClasses_(numClasses) {
+std::shared_ptr<SpiralDataHandler> handlerPtr = nullptr;
+
+DataHandler& DataHandler::getInstance(uint32_t numSamples, uint32_t numClasses) {
+    if(handlerPtr == nullptr) {
+        handlerPtr = std::make_shared<SpiralDataHandler>(numSamples, numClasses);
+    }
+    return *handlerPtr;
+}
+
+DataHandler::DataHandler() {
+}
+
+DataHandler::~DataHandler() {
+}
+
+void DataHandler::cleanup() {
+    handlerPtr = nullptr;
+}
+
+SpiralDataHandler::SpiralDataHandler(uint32_t numSamples, uint32_t numClasses)
+    : numSamples_(numSamples), numClasses_(numClasses) {
     if(numSamples % numClasses) {
         throw "Number of samples should be multiples of number of classes";
     }
@@ -13,14 +33,14 @@ DataHandler::DataHandler(uint32_t numSamples, uint32_t numClasses)
     generateData();
 }
 
-DataHandler::~DataHandler() {
+SpiralDataHandler::~SpiralDataHandler() {
   dataStore_.clear();
   trainingData_.clear();
   testData_.clear();
   validationData_.clear();
 }
 
-void DataHandler::generateData() {
+void SpiralDataHandler::generateData() {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -47,9 +67,9 @@ void DataHandler::generateData() {
             if(y_coord > dataMax_) {
               dataMax_ = y_coord;
             }
-            dataStore_[sampleIdx] = std::make_shared<Data>(2);
-            dataStore_[sampleIdx]->features_ = std::vector<double>{x_coord, y_coord};
-            dataStore_[sampleIdx]->label_ = class_num;
+            dataStore_[sampleIdx] = std::make_shared<Data>();
+            dataStore_[sampleIdx]->features = std::vector<double>{x_coord, y_coord};
+            dataStore_[sampleIdx]->label = class_num;
             sampleIdx++;
         }
     }
@@ -57,7 +77,7 @@ void DataHandler::generateData() {
     std::shuffle(dataStore_.begin(), dataStore_.end(), gen);
 }
 
-std::vector<double> DataHandler::linspace(double start, double end, int num)
+std::vector<double> SpiralDataHandler::linspace(double start, double end, int num)
 {
   std::vector<double> linspaced;
 
@@ -78,7 +98,7 @@ std::vector<double> DataHandler::linspace(double start, double end, int num)
   return linspaced;
 }
 
-void DataHandler::splitData(double trainPct, double testPct, double validPct)
+void SpiralDataHandler::splitData(double trainPct, double testPct, double validPct)
 {
     // Training Data: will hold shared pointer to data array vector
     uint32_t trainIdx = 0;
@@ -119,28 +139,28 @@ void DataHandler::splitData(double trainPct, double testPct, double validPct)
     }
 }
 
-void DataHandler::normalizeData() {
+void SpiralDataHandler::normalizeData() {
     for(uint32_t idx = 0; idx < numSamples_; ++idx) {
-        dataStore_[idx]->features_[1] =
-            static_cast<double>(dataStore_[idx]->features_[1] - dataMin_)/(dataMax_ - dataMin_);
+        dataStore_[idx]->features[1] =
+            static_cast<double>(dataStore_[idx]->features[1] - dataMin_)/(dataMax_ - dataMin_);
     }
 }
 
-uint32_t DataHandler::getNumLabels() {
+uint32_t SpiralDataHandler::getNumLabels() {
     return numClasses_;
 }
 
-std::vector<std::shared_ptr<Data>>& DataHandler::getAllData() {
+std::vector<std::shared_ptr<DataHandler::Data>>& SpiralDataHandler::getAllData() {
   return dataStore_;
 }
-std::vector<std::shared_ptr<Data>>& DataHandler::getTrainData() {
+std::vector<std::shared_ptr<DataHandler::Data>>& SpiralDataHandler::getTrainData() {
     return trainingData_;
 }
 
-std::vector<std::shared_ptr<Data>>& DataHandler::getTestData() {
+std::vector<std::shared_ptr<DataHandler::Data>>& SpiralDataHandler::getTestData() {
     return testData_;
 }
 
-std::vector<std::shared_ptr<Data>>& DataHandler::getValidData() {
+std::vector<std::shared_ptr<DataHandler::Data>>& SpiralDataHandler::getValidData() {
     return validationData_;
 }
