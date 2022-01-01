@@ -26,4 +26,5 @@ There are 2 main directories:
    There is also makefile to build this code and generate network.so.
 
 ## Design
-Design was based 
+
+![NeuralNet_3](https://user-images.githubusercontent.com/29670728/147845114-7e009818-b16d-4d2e-aa2c-9dc8d01c3853.png)<br><br>
