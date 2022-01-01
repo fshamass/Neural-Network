@@ -9,7 +9,7 @@ I learned a lot from this project and got deeper understanding of neural network
 ## Table of Contents
 - [Organization](#organization)
 - [Design](#design)
-- [Sample Run](#sample_run)
+- [Sample Run](#sample-run)
 - [License](#license)
 
 ## Organization
