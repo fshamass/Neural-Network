@@ -8,7 +8,7 @@ I learned a lot from this project and got deeper understanding of neural network
 
 ## Table of Contents
 - [Organization](#organization)
-- [Usage](#usage)
+- [Design](#design)
 - [Credits](#credits)
 - [License](#license)
 
@@ -23,5 +23,7 @@ There are 2 main directories:
 - network: contains code for neural network implementation. This directory contains 2 sub directories
    - interface: Contains the interface class used by application to configure and train neural network.
    - src: Contains the internal implementation of the interface APIs stated above
-   There is also makefile to build this code and generate network.so
+   There is also makefile to build this code and generate network.so.
 
+## Design
+Design was based 
