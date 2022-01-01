@@ -7,12 +7,12 @@ Since my ultiamte goal is to learn self driving cars, I only implemented multicl
 I learned a lot from this project and got deeper understanding of neural network learing challenges by playing with hyper parameters.
 
 ## Table of Contents
-- [Organization](#organization)
+- [Code Structure](#code-structure)
 - [Design](#design)
 - [Sample Run](#sample-run)
 - [License](#license)
 
-## Organization
+## Code Structure
 Code directory structure is organized as the following:<br><br>
 ![DirectoryDiagram](https://user-images.githubusercontent.com/29670728/147845259-ae43a9e2-d3ec-4695-8459-d0e6176efe84.png) <br><br>
 On top level:<br>
