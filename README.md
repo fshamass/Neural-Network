@@ -9,7 +9,7 @@ I learned a lot from this project and got deeper understanding of neural network
 ## Table of Contents
 - [Organization](#organization)
 - [Design](#design)
-- [Credits](#credits)
+- [Sample Run](#sample_run)
 - [License](#license)
 
 ## Organization
@@ -39,7 +39,13 @@ Application level:
 - Application uses NeuralNet interface to get instance that implements APIs included in the interface.<br>
 
 Internal implementation level: 
+- DataHandler interface is used to abstract operations to be performed on network input data.
 - ILayer, INetLoss, and IOptimizer interfaces are used to abstract layer, network loss and optimizer componenents functionality. *NeuralNetImpl* class ised those interfaces to train network regardless of waht type of layer, network loss or optimizer is used.
 - Furthur more, IActivation interface is used to abstract activation function used. Layer, uses IActivation interface for forward and backward pass regadless or what activation function is used.
 
+
+## Sample Run
+![all_input_data](https://user-images.githubusercontent.com/29670728/147860633-137886ce-f19c-4355-b567-8011433066d8.png)
+![network_loss](https://user-images.githubusercontent.com/29670728/147860641-165e469e-8940-4fbe-aa52-5afcbb978d41.png)
+![network_accuracy](https://user-images.githubusercontent.com/29670728/147860644-2782a4c4-cd0a-4b53-af29-52192a1c4ae2.png)
 
