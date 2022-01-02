@@ -19,11 +19,6 @@ void Neuron::init() {
             Eigen::VectorXd::Constant(numNeurons_,1) * 0.01;
     }
     bias_ = Eigen::VectorXd::Zero(numNeurons_);
-
-    #ifdef __DEBUG__
-    std::cout << "Neuron Weights: \n" << weights_ << std::endl;
-    std::cout << "Neuron Weights size :" << weights_.rows() << " x " << weights_.cols() << std::endl;
-    #endif
 }
 
 void Neuron::forward(Eigen::MatrixXd& input) {

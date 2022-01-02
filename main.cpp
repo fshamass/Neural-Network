@@ -48,41 +48,20 @@ int main() {
         neuralNet.setLossFunction(LossFunc::CATEGORICAL_CROSS_ENTROPY);
 
         optimizerParams params;
-        /* Params for SGD
-        params.learnRate = 1;
-        params.decay = 1e-3;
-        params.momentum = 0.5;
-        neuralNet->setOptimizer(Optimizer::SGD, params);
-        */
-
-        /* Params for RMS Prop
-        params.learnRate = 0.001;
-        params.decay = 1e-4;
-        params.epsilon = 1e-7;
-        params.rho = 0.9;
-        neuralNet->setOptimizer(Optimizer::RMSprop, params);
-        */
-
         /* Params for Adam */
         params.learnRate = 0.05;
         params.decay = 1e-5;
         neuralNet.setOptimizer(Optimizer::Adam, params);
 
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         neuralNet.fit(100);
         neuralNet.evaluate();
 
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Run Time = " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << "[sec]" << std::endl;
-
-//        plt::backend("WebAgg");
         plt::figure(1);
         plt::title("Input Spiral Data Sets");
         plotSprialDataSets(dataHandler.getTrainData(), "Train Data", "green");
         plotSprialDataSets(dataHandler.getValidData(), "Valid Data", "red");
         plotSprialDataSets(dataHandler.getTestData(),  "Test Data", "blue");
         plt::legend();
-        //plt::show();
 
         plt::figure(2);
         plt::title("Training vs Validation Accuracy");

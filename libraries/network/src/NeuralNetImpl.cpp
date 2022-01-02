@@ -165,12 +165,6 @@ void NeuralNetImpl::populateInputsAndTargets(DataHandler::dataPtrVector& data,
                                         (data[sample]->features).size());
         targets_(sample - startIdx) = data[sample]->label;
     }
-    #ifdef __DEBUG__
-    std::cout << "Network input size: " << netInput_.rows() << " x " << netInput_.cols() << std::endl;
-    std::cout << "Network target size: " << targets_.rows() << " x " << targets_.cols() << std::endl;
-    std::cout << "Network Input: \n" << netInput_ << std::endl;
-    std::cout << "Target input:  \n" << targets_.transpose() << std::endl;
-    #endif
 }
 
 void NeuralNetImpl::calculateNetLoss() {
@@ -237,9 +231,6 @@ void NeuralNetImpl::fit(uint32_t epochs) {
         //Shuffle input data with every epoch for best randomization
         shuffleData(trainData_);
         for(uint32_t idx = 0; idx <= trainData_.size() - batchSize_; idx += batchSize_) {
-            #ifdef __DEBUG__
-            std::cout << "Processing Batch: "<< static_cast<int>((idx/batchSize_) + 1) << std::endl;
-            #endif
             populateInputsAndTargets(trainData_, idx, idx+batchSize_);
             forwardPass(false);
             calculateNetLoss();
